@@ -8,28 +8,48 @@ export default function RedirectHandler() {
     const [status, setStatus] = useState('loading'); // loading | disabled | expired | redirecting
 
     useEffect(() => {
-        const link = findLinkByCode(code);
-        if (!link) {
-            navigate('/', { replace: true });
-            return;
+        let cancelled = false;
+
+        async function handleRedirect() {
+            try {
+                const link = await findLinkByCode(code);
+
+                if (cancelled) return;
+
+                if (!link) {
+                    navigate('/', { replace: true });
+                    return;
+                }
+
+                // Check if link is disabled
+                if (link.enabled === false) {
+                    setStatus('disabled');
+                    return;
+                }
+
+                // Check if link has exceeded max clicks
+                if (link.maxClicks !== null && link.maxClicks !== undefined && link.maxClicks > 0 && link.clicks >= link.maxClicks) {
+                    setStatus('expired');
+                    return;
+                }
+
+                // All good — increment and redirect
+                await incrementClick(code);
+                if (!cancelled) {
+                    setStatus('redirecting');
+                    window.location.href = link.originalUrl;
+                }
+            } catch (err) {
+                console.error('Redirect error:', err);
+                if (!cancelled) {
+                    navigate('/', { replace: true });
+                }
+            }
         }
 
-        // Check if link is disabled
-        if (link.enabled === false) {
-            setStatus('disabled');
-            return;
-        }
+        handleRedirect();
 
-        // Check if link has exceeded max clicks
-        if (link.maxClicks !== null && link.maxClicks !== undefined && link.maxClicks > 0 && link.clicks >= link.maxClicks) {
-            setStatus('expired');
-            return;
-        }
-
-        // All good — increment and redirect
-        incrementClick(code);
-        setStatus('redirecting');
-        window.location.href = link.originalUrl;
+        return () => { cancelled = true; };
     }, [code, navigate]);
 
     if (status === 'disabled') {
