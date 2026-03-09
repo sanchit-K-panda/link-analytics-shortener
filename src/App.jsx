@@ -1,14 +1,138 @@
-import { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import RedirectHandler from './components/RedirectHandler';
-import { getLinks, addLink, generateShortCode } from './utils/storage';
+import {
+    getLinks, addLink, generateShortCode, updateLinkUrl, toggleLinkEnabled,
+    registerUser, loginUser, getSession, logout
+} from './utils/storage';
 
+// ===== AUTH PAGE =====
+function AuthPage() {
+    const [isLogin, setIsLogin] = useState(true);
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const session = getSession();
+        if (session) {
+            navigate('/', { replace: true });
+        }
+    }, [navigate]);
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        setError('');
+
+        if (!username.trim() || !password.trim()) {
+            setError('Please fill in all fields.');
+            return;
+        }
+
+        if (!isLogin && password.length < 4) {
+            setError('Password must be at least 4 characters.');
+            return;
+        }
+
+        let result;
+        if (isLogin) {
+            result = loginUser(username.trim(), password);
+        } else {
+            result = registerUser(username.trim(), password);
+        }
+
+        if (result.success) {
+            navigate('/', { replace: true });
+        } else {
+            setError(result.error);
+        }
+    }
+
+    return (
+        <div className="app-container">
+            <div className="bg-gradient"></div>
+            <div className="bg-grid"></div>
+
+            <div className="auth-wrapper">
+                <div className="auth-card">
+                    <div className="auth-logo">
+                        <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
+                            <rect width="32" height="32" rx="8" fill="url(#logo-grad-auth)" />
+                            <path d="M10 16L14 20L22 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                            <defs>
+                                <linearGradient id="logo-grad-auth" x1="0" y1="0" x2="32" y2="32">
+                                    <stop stopColor="#6366f1" />
+                                    <stop offset="1" stopColor="#a855f7" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span>LinkSnip</span>
+                    </div>
+                    <h1>{isLogin ? 'Welcome Back' : 'Create Account'}</h1>
+                    <p className="auth-subtitle">{isLogin ? 'Log in to manage your links' : 'Sign up to start shortening'}</p>
+
+                    <form onSubmit={handleSubmit} className="auth-form">
+                        <div className="form-group">
+                            <label htmlFor="auth-username">Username</label>
+                            <input
+                                id="auth-username"
+                                type="text"
+                                placeholder="Enter your username"
+                                value={username}
+                                onChange={(e) => { setUsername(e.target.value); setError(''); }}
+                                autoFocus
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="auth-password">Password</label>
+                            <input
+                                id="auth-password"
+                                type="password"
+                                placeholder="Enter your password"
+                                value={password}
+                                onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                            />
+                        </div>
+                        {error && <p className="error-msg">{error}</p>}
+                        <button type="submit" className="btn-auth" id="auth-submit-btn">
+                            {isLogin ? 'Log In' : 'Register'}
+                        </button>
+                    </form>
+
+                    <p className="auth-switch">
+                        {isLogin ? "Don't have an account? " : 'Already have an account? '}
+                        <button className="btn-link" onClick={() => { setIsLogin(!isLogin); setError(''); }} id="auth-toggle-btn">
+                            {isLogin ? 'Register' : 'Log In'}
+                        </button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ===== HOME PAGE (DASHBOARD) =====
 function HomePage() {
+    const navigate = useNavigate();
+    const session = getSession();
+
+    useEffect(() => {
+        if (!session) {
+            navigate('/auth', { replace: true });
+        }
+    }, [session, navigate]);
+
     const [url, setUrl] = useState('');
-    const [links, setLinks] = useState(getLinks());
+    const [maxClicks, setMaxClicks] = useState('');
+    const [links, setLinks] = useState(session ? getLinks(session.username) : []);
     const [error, setError] = useState('');
     const [copied, setCopied] = useState(null);
     const [justCreated, setJustCreated] = useState(null);
+    const [editingCode, setEditingCode] = useState(null);
+    const [editUrl, setEditUrl] = useState('');
+
+    if (!session) return null;
 
     function isValidUrl(string) {
         try {
@@ -33,10 +157,17 @@ function HomePage() {
             return;
         }
 
+        const clickLimit = maxClicks.trim() ? parseInt(maxClicks.trim(), 10) : null;
+        if (maxClicks.trim() && (isNaN(clickLimit) || clickLimit < 1)) {
+            setError('Click limit must be a positive number.');
+            return;
+        }
+
         const shortCode = generateShortCode();
-        const updated = addLink(trimmed, shortCode);
+        const updated = addLink(trimmed, shortCode, session.username, clickLimit);
         setLinks(updated);
         setUrl('');
+        setMaxClicks('');
         setJustCreated(shortCode);
         setTimeout(() => setJustCreated(null), 3000);
     }
@@ -52,14 +183,50 @@ function HomePage() {
     }
 
     function refreshLinks() {
-        setLinks(getLinks());
+        setLinks(getLinks(session.username));
+    }
+
+    function handleToggleEnabled(code) {
+        const updated = toggleLinkEnabled(code, session.username);
+        setLinks(updated);
+    }
+
+    function handleEditStart(link) {
+        setEditingCode(link.shortCode);
+        setEditUrl(link.originalUrl);
+    }
+
+    function handleEditSave(code) {
+        if (!editUrl.trim() || !isValidUrl(editUrl.trim())) {
+            return;
+        }
+        const updated = updateLinkUrl(code, editUrl.trim(), session.username);
+        setLinks(updated);
+        setEditingCode(null);
+        setEditUrl('');
+    }
+
+    function handleEditCancel() {
+        setEditingCode(null);
+        setEditUrl('');
+    }
+
+    function handleLogout() {
+        logout();
+        navigate('/auth', { replace: true });
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '—';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
     }
 
     const totalClicks = links.reduce((sum, l) => sum + l.clicks, 0);
+    const activeLinks = links.filter(l => l.enabled !== false).length;
 
     return (
         <div className="app-container">
-            {/* Background effects */}
             <div className="bg-gradient"></div>
             <div className="bg-grid"></div>
 
@@ -78,7 +245,12 @@ function HomePage() {
                     </svg>
                     <span>LinkSnip</span>
                 </div>
-                <p className="header-tagline">Shorten. Track. Analyze.</p>
+                <div className="header-right">
+                    <span className="header-user">👤 {session.username}</span>
+                    <button className="btn-logout" onClick={handleLogout} id="logout-btn">
+                        Logout
+                    </button>
+                </div>
             </header>
 
             {/* Main Content */}
@@ -110,6 +282,24 @@ function HomePage() {
                                     <polyline points="12 5 19 12 12 19" />
                                 </svg>
                             </button>
+                        </div>
+                        <div className="click-limit-row">
+                            <label htmlFor="max-clicks-input">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <polyline points="12 6 12 12 16 14" />
+                                </svg>
+                                Click Limit (optional):
+                            </label>
+                            <input
+                                id="max-clicks-input"
+                                type="number"
+                                min="1"
+                                placeholder="e.g. 10"
+                                value={maxClicks}
+                                onChange={(e) => setMaxClicks(e.target.value)}
+                                className="click-limit-input"
+                            />
                         </div>
                         {error && <p className="error-msg">{error}</p>}
                     </form>
@@ -162,8 +352,8 @@ function HomePage() {
                             </svg>
                         </div>
                         <div>
-                            <p className="stat-value">{links.length > 0 ? Math.max(...links.map(l => l.clicks)) : 0}</p>
-                            <p className="stat-label">Most Clicks</p>
+                            <p className="stat-value">{activeLinks}</p>
+                            <p className="stat-label">Active Links</p>
                         </div>
                     </div>
                 </section>
@@ -201,17 +391,35 @@ function HomePage() {
                                         <th>Short Link</th>
                                         <th>Clicks</th>
                                         <th>Created</th>
-                                        <th>Action</th>
+                                        <th>Last Accessed</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {[...links].reverse().map((link, i) => (
-                                        <tr key={link.shortCode} className={justCreated === link.shortCode ? 'row-new' : ''}>
+                                        <tr key={link.shortCode} className={`${justCreated === link.shortCode ? 'row-new' : ''} ${link.enabled === false ? 'row-disabled' : ''}`}>
                                             <td className="td-num">{links.length - i}</td>
                                             <td className="td-original">
-                                                <a href={link.originalUrl} target="_blank" rel="noopener noreferrer">
-                                                    {link.originalUrl.length > 50 ? link.originalUrl.slice(0, 50) + '...' : link.originalUrl}
-                                                </a>
+                                                {editingCode === link.shortCode ? (
+                                                    <div className="edit-inline">
+                                                        <input
+                                                            type="text"
+                                                            value={editUrl}
+                                                            onChange={(e) => setEditUrl(e.target.value)}
+                                                            className="edit-input"
+                                                            autoFocus
+                                                        />
+                                                        <div className="edit-actions">
+                                                            <button className="btn-save" onClick={() => handleEditSave(link.shortCode)}>Save</button>
+                                                            <button className="btn-cancel" onClick={handleEditCancel}>Cancel</button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <a href={link.originalUrl} target="_blank" rel="noopener noreferrer">
+                                                        {link.originalUrl.length > 45 ? link.originalUrl.slice(0, 45) + '...' : link.originalUrl}
+                                                    </a>
+                                                )}
                                             </td>
                                             <td className="td-short">
                                                 <a href={getShortUrl(link.shortCode)} target="_blank" rel="noopener noreferrer">
@@ -219,14 +427,30 @@ function HomePage() {
                                                 </a>
                                             </td>
                                             <td className="td-clicks">
-                                                <span className="click-badge">{link.clicks}</span>
+                                                <span className="click-badge">
+                                                    {link.clicks}{link.maxClicks ? `/${link.maxClicks}` : ''}
+                                                </span>
+                                                {link.maxClicks && link.clicks >= link.maxClicks && (
+                                                    <span className="expired-tag">expired</span>
+                                                )}
                                             </td>
-                                            <td className="td-date">
-                                                {new Date(link.createdAt).toLocaleDateString()}
-                                            </td>
+                                            <td className="td-date">{formatDate(link.createdAt)}</td>
+                                            <td className="td-date">{formatDate(link.lastAccessedAt)}</td>
                                             <td>
-                                                <button className="btn-copy" onClick={() => handleCopy(link.shortCode)}>
-                                                    {copied === link.shortCode ? '✓ Copied' : 'Copy'}
+                                                <button
+                                                    className={`btn-toggle ${link.enabled !== false ? 'toggle-on' : 'toggle-off'}`}
+                                                    onClick={() => handleToggleEnabled(link.shortCode)}
+                                                    title={link.enabled !== false ? 'Disable link' : 'Enable link'}
+                                                >
+                                                    {link.enabled !== false ? 'Active' : 'Disabled'}
+                                                </button>
+                                            </td>
+                                            <td className="td-actions">
+                                                <button className="btn-action" onClick={() => handleEditStart(link)} title="Edit URL">
+                                                    ✏️
+                                                </button>
+                                                <button className="btn-action" onClick={() => handleCopy(link.shortCode)} title="Copy short link">
+                                                    {copied === link.shortCode ? '✓' : '📋'}
                                                 </button>
                                             </td>
                                         </tr>
@@ -249,6 +473,7 @@ export default function App() {
     return (
         <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/auth" element={<AuthPage />} />
             <Route path="/r/:code" element={<RedirectHandler />} />
         </Routes>
     );
