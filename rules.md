@@ -1,98 +1,148 @@
-# VIBEATHON 2026
+# 🏆 VIBEATHON 2026 — Official Rules & Regulations
 
-## Official Rules & Regulations
+> **Event by**: Cognito Club  
+> **Format**: Solo Build & Ship Competition  
+> **Structure**: Multiple Elimination Rounds  
+
+---
+
+## 📋 Table of Contents
+
+1. [General Rules](#1-general-rules)
+2. [Submission Requirements](#2-submission-requirements)
+3. [Judging Criteria](#3-judging-criteria)
+4. [Speed-Based Advancement](#4-speed-based-advancement)
+5. [Fair Participation](#5-fair-participation)
+6. [Organizer Authority](#6-organizer-authority)
+7. [Quick Reference Checklist](#7-quick-reference-checklist)
 
 ---
 
 ## 1. General Rules
 
-- VIBEATHON is a **solo Build & Ship competition**.
-- Participants must use their **own laptop** during the event.
-- Internet access is allowed for development and deployment.
-- Participants must bring their **laptop fully charged**.
-- The competition will consist of **multiple elimination rounds**.
-- At the start of each round, participants will receive a **Product Requirement Document (PRD)** describing the system to be built.
-- Participants must complete the required system within the **allotted round time**.
-- Submissions must be made through the **official Google Form link provided during the round**.
-
-### Submission Requirements
-
-Each submission must include:
-
-- Participant ID
-- Live application link
-- PRD document describing their implementation
-
-All submissions will automatically be recorded in a **Google Sheet with a precise timestamp**.
-
-Google Forms records timestamps with **high precision**, ensuring that even if two participants submit at nearly the same time, the submission order is recorded accurately.
-
-This timestamp determines the **submission order used during verification and qualification**.
-
-Participants must remain available at their workstation until their submission has been verified.
+| Rule | Details |
+|------|---------|
+| **Competition Type** | Solo Build & Ship |
+| **Equipment** | Own laptop, fully charged |
+| **Internet** | Allowed for development and deployment |
+| **Rounds** | Multiple elimination rounds |
+| **PRD** | Provided at the start of each round — describes the system to build |
+| **Time Limit** | Must complete required system within each round's allotted time |
+| **Availability** | Must remain at workstation until submission is verified |
 
 ---
 
-## 2. Judging Criteria
+## 2. Submission Requirements
 
-VIBEATHON follows a **functionality-based evaluation model**.
+Submissions are made through the **official Google Form link** provided during each round.
 
-There is **no point-based scoring system** and no subjective judging criteria such as design preference or UI aesthetics.
+### Each submission must include:
 
-Evaluation is based solely on whether the **required features specified in the PRD** for the round are implemented and functioning correctly.
+| # | Required Item | Description |
+|---|---------------|-------------|
+| 1 | **Participant ID** | Your unique competition identifier |
+| 2 | **Live Application Link** | Deployed, functional URL of your application |
+| 3 | **PRD Document** | Your implementation's Product Requirement Document |
 
-Participants will qualify for the next round only if:
+### Timestamp Tracking
 
-- All required features listed in the PRD are implemented
-- The system functions correctly during verification
-- The submission is completed within the allotted round time
+- All submissions are recorded in a **Google Sheet with high-precision timestamps**
+- Even near-simultaneous submissions are ordered accurately
+- This timestamp determines **verification order and qualification ranking**
 
-**If any required feature is missing or non-functional, the participant may be disqualified.**
-
-### Speed-Based Advancement
-
-VIBEATHON is a **fast-paced competition**, and speed plays a critical role in qualification.
-
-Participants who successfully pass verification **earlier than others** will be ranked higher based on the **submission timestamp recorded in the Google Sheet**.
-
-Each round has a **maximum qualification cap**, meaning only a limited number of participants will advance.
-
-Only participants who:
-
-- Successfully pass verification, and
-- Fall within the qualification cap based on timestamp order
-
-will qualify for the next round.
-
-Submission of the form **does not guarantee qualification**.
-Qualification is confirmed only after successful verification.
+> ⚠️ **Submitting the form does NOT guarantee qualification.** Qualification is confirmed only after successful verification.
 
 ---
 
-## 3. Fair Participation
+## 3. Judging Criteria
 
-Participants must build their solutions **during the event timeframe**.
+### Evaluation Model: **Functionality-Based**
 
-The following actions are **not permitted**:
+| What Matters | What Doesn't Matter |
+|---|---|
+| ✅ All required PRD features implemented | ❌ Design preference |
+| ✅ System functions correctly during verification | ❌ UI aesthetics |
+| ✅ Completed within allotted round time | ❌ Point-based scoring |
 
-- Using previously built projects
-- Copying solutions from other participants
-- Sharing code, systems, or working links with other participants
+### Qualification Requirements
 
-Violation of these rules may result in **immediate disqualification**.
+To qualify for the next round, **ALL** of the following must be true:
 
----
+1. ✅ All required features listed in the PRD are **implemented**
+2. ✅ The system **functions correctly** during live verification
+3. ✅ The submission is **completed within** the allotted round time
 
-## 4. Organizer Authority
-
-The **Cognito Club organizing team** reserves the right to:
-
-- Resolve technical issues or disputes
-- Manage the verification and qualification process
-- Make final decisions regarding results
-
-All decisions made by the organizing team will be **final and binding**.
+> 🚨 **CRITICAL**: If **any** required feature is missing or non-functional, the participant **may be disqualified**.
 
 ---
 
-**Build. Adapt. Ship.**
+## 4. Speed-Based Advancement
+
+VIBEATHON is a **fast-paced competition** — speed is a critical factor.
+
+### How Ranking Works
+
+```
+Earlier Successful Verification → Higher Rank → Better Chance to Advance
+```
+
+### Qualification Cap
+
+- Each round has a **maximum number of participants** that can advance
+- Only participants who:
+  1. ✅ Successfully **pass verification**
+  2. ✅ Fall within the **qualification cap** (based on timestamp order)
+- will qualify for the next round
+
+### Key Takeaway
+
+> 💡 **Ship fast, ship correct.** Functionality must work, but the faster you submit and pass verification, the higher you rank.
+
+---
+
+## 5. Fair Participation
+
+All solutions must be built **during the event timeframe**.
+
+### ❌ Prohibited Actions
+
+| Action | Consequence |
+|--------|-------------|
+| Using previously built projects | **Immediate disqualification** |
+| Copying solutions from other participants | **Immediate disqualification** |
+| Sharing code, systems, or working links with others | **Immediate disqualification** |
+
+---
+
+## 6. Organizer Authority
+
+The **Cognito Club organizing team** has the authority to:
+
+- 🔧 Resolve technical issues or disputes
+- 📋 Manage the verification and qualification process
+- ⚖️ Make final decisions regarding results
+
+> All decisions made by the organizing team are **final and binding**.
+
+---
+
+## 7. Quick Reference Checklist
+
+Use this before every submission:
+
+```
+PRE-SUBMISSION CHECKLIST
+========================
+[ ] All required PRD features implemented
+[ ] Every feature tested and functional
+[ ] Application deployed and live
+[ ] Live URL is accessible (not localhost)
+[ ] PRD document is ready
+[ ] Participant ID noted
+[ ] Google Form submission link ready
+[ ] Submit ASAP — speed = rank
+```
+
+---
+
+**Build. Adapt. Ship.** 🚀
